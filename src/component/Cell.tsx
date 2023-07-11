@@ -9,6 +9,7 @@ import { Flag, NewReleases } from "@mui/icons-material";
 import { Box } from "@mui/material";
 import { Cell as CellProps } from "@/types/cell";
 import { MinesweeperContext } from "@/context/MinesweeperContext";
+import { useObservable } from "react-use";
 
 const CellColor: { [key: number]: string } = {
   [0]: "transparent",
@@ -26,18 +27,20 @@ export const Cell: FC<{
   cell: CellProps;
 }> = ({ cell }) => {
   /** Context */
-  const { reqOpenCell$, reqFlagCell$ } = useContext(MinesweeperContext);
+  const { reqOpenCell$, reqFlagCell$, reqShowMines$ } =
+    useContext(MinesweeperContext);
+  const showMines = useObservable(reqShowMines$, false);
 
   /** Callback */
   const handleClick = useCallback(
-    () => !cell.isFlagged && reqOpenCell$.next(cell.index),
+    () => !cell.isFlagged && reqOpenCell$.next([cell.row, cell.column]),
     [cell, reqOpenCell$]
   );
 
   const handleContextMenu = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       e.preventDefault();
-      !cell.isOpened && reqFlagCell$.next(cell.index);
+      !cell.isOpened && reqFlagCell$.next([cell.row, cell.column]);
     },
     [cell, reqFlagCell$]
   );
@@ -46,6 +49,7 @@ export const Cell: FC<{
   return (
     <Box
       sx={{
+        position: "relative",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -56,7 +60,7 @@ export const Cell: FC<{
           ? cell.isOpened
             ? "red"
             : "black"
-          : CellColor[cell.surroundedMines],
+          : CellColor[cell.surroundingMines],
         backgroundColor: "lightgrey",
         borderWidth: cell.isOpened ? 1 : 2,
         borderStyle: "solid",
@@ -69,14 +73,31 @@ export const Cell: FC<{
       onClick={handleClick}
       onContextMenu={handleContextMenu}
     >
-      {cell.isOpened ? (
+      {cell.isFlagged ? (
+        <Flag
+          sx={{
+            p: 0.25,
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+          }}
+        />
+      ) : cell.isOpened || showMines ? (
         cell.isMine ? (
-          <NewReleases sx={{ p: 0.25 }} />
+          <NewReleases
+            sx={{
+              p: 0.25,
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+          />
         ) : (
-          cell.surroundedMines
+          cell.surroundingMines
         )
       ) : null}
-      {cell.isFlagged ? <Flag sx={{ p: 0.25 }} /> : null}
     </Box>
   );
 };

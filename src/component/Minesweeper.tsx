@@ -11,13 +11,14 @@ import {
   useMemo,
   useState,
 } from "react";
+import { i2rc, i2square, openCell, rc2i, rc2square } from "@/util/table";
 
 import { Cell } from "@/types/cell";
 import { MinesweeperContext } from "@/context/MinesweeperContext";
 import { Stack } from "@mui/material";
 import { Table } from "@/component/Table";
 import { Toolbar } from "@/component/Toolbar";
-import { i2square } from "@/util/cell";
+import { cloneDeep } from "lodash";
 
 export {};
 
@@ -45,36 +46,54 @@ export const Minesweeper: FC<{
     useContext(MinesweeperContext);
 
   /** State */
-  const [cells, setCells] = useState<Cell[]>([]);
+  const [table, setTable] = useState<Cell[][]>([]);
 
   /** Memo */
-  const { getSquareIndices } = useMemo(
-    () => ({ getSquareIndices: i2square(rows, columns) }),
+  const {
+    getSquareIndices,
+    getRowColumnSquare,
+    indexToRowColumn,
+    rowColumnToIndex,
+  } = useMemo(
+    () => ({
+      getSquareIndices: i2square(rows, columns),
+      getRowColumnSquare: rc2square(rows, columns),
+      indexToRowColumn: i2rc(rows, columns),
+      rowColumnToIndex: rc2i(rows, columns),
+    }),
     [rows, columns]
   );
 
   /** Callback */
   const handleReset = useCallback(() => {
     const numCells = rows * columns;
+
     const cellIndices = Array.from(Array(numCells).keys());
-
-    const cells: Cell[] = cellIndices.map((i) => ({
-      index: i,
-      surroundedMines: 0,
-    }));
-
     const mineIndices = cellIndices.slice().shuffle().slice(0, mineNum);
-    mineIndices
-      .flatMap((i) => {
-        cells[i].isMine = true;
-        return getSquareIndices(i);
-      })
-      .map((i) => {
-        if (typeof i === "number") cells[i].surroundedMines += 1;
-      });
 
-    setCells(cells);
-  }, [rows, columns, mineNum, getSquareIndices]);
+    // Setup mine table
+    const table: Cell[][] = new Array(rows)
+      .fill(0)
+      .map((_, row) =>
+        new Array(columns)
+          .fill(0)
+          .map((_, column) => ({ row, column, surroundingMines: 0 }))
+      );
+
+    // Plant mines
+    mineIndices.map((i) => {
+      const rowColumn = indexToRowColumn(i);
+      if (!rowColumn) return;
+
+      const [row, column] = rowColumn;
+      table[row][column].isMine = true;
+
+      const square = getRowColumnSquare(row, column);
+      square.map(([r, c]) => (table[r][c].surroundingMines += 1));
+    });
+
+    setTable(table);
+  }, [rows, columns, mineNum, indexToRowColumn, getRowColumnSquare]);
 
   useEffect(handleReset, [handleReset]);
 
@@ -83,29 +102,25 @@ export const Minesweeper: FC<{
     const subscriptions = [
       reqReset$.subscribe(handleReset),
 
-      reqOpenCell$.subscribe((i) => {
-        if (typeof i !== "number") return;
+      reqOpenCell$.subscribe((rc) => {
+        if (!rc) return;
+        const [r, c] = rc;
 
-        setCells((cells) => {
-          if (i >= cells.length) return cells;
-
-          const newCells = cells.slice();
-          newCells[i].isOpened = true;
-
-          return newCells;
-        });
+        if (r < 0 || c < 0 || r >= rows || c >= columns) return;
+        setTable((oldTable) => openCell(cloneDeep(oldTable), r, c));
       }),
 
-      reqFlagCell$.subscribe((i) => {
-        if (typeof i !== "number") return;
+      reqFlagCell$.subscribe((rc) => {
+        if (!rc) return;
+        const [r, c] = rc;
 
-        setCells((cells) => {
-          if (i >= cells.length) return cells;
+        if (r < 0 || c < 0 || r >= rows || c >= columns) return;
 
-          const newCells = cells.slice();
-          newCells[i].isFlagged = !cells[i].isFlagged;
+        setTable((oldTable) => {
+          const newTable = cloneDeep(oldTable);
+          newTable[r][c].isFlagged = !oldTable[r][c].isFlagged;
 
-          return newCells;
+          return newTable;
         });
       }),
     ];
@@ -113,7 +128,15 @@ export const Minesweeper: FC<{
     return () => {
       subscriptions.map((s) => s.unsubscribe());
     };
-  }, [handleReset, reqOpenCell$, reqReset$, reqFlagCell$]);
+  }, [
+    handleReset,
+    reqOpenCell$,
+    reqReset$,
+    reqFlagCell$,
+    rows,
+    columns,
+    indexToRowColumn,
+  ]);
 
   /** Render */
   return (
@@ -127,7 +150,7 @@ export const Minesweeper: FC<{
       }}
     >
       <Toolbar />
-      <Table rows={rows} columns={columns} cells={cells} />
+      <Table table={table} />
     </Stack>
   );
 };

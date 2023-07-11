@@ -4,8 +4,9 @@
  */
 
 export interface Cell {
-  index: number;
-  surroundedMines: number;
+  row: number;
+  column: number;
+  surroundingMines: number;
 
   isMine?: boolean;
   isOpened?: boolean;

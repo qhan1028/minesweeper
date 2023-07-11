@@ -19,6 +19,11 @@ export const ThemeProvider: FC<HTMLAttributes<HTMLDivElement>> = ({
     () =>
       ({
         spacing: 8,
+        components: {
+          MuiButton: {
+            styleOverrides: { root: { textTransform: "unset" } },
+          },
+        },
       } as ThemeOptions),
     []
   );

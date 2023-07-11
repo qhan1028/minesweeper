@@ -9,21 +9,25 @@ import { Cell as CellProps } from "@/types/cell";
 import { FC } from "react";
 
 export const Table: FC<{
-  rows: number;
-  columns: number;
-  cells: CellProps[];
-}> = ({ rows, columns, cells }) => {
+  table: CellProps[][];
+}> = ({ table }) => {
   /** Render */
   return (
     <Box
       sx={{
         display: "grid",
-        gridTemplateRows: `repeat(${rows}, 24px)`,
-        gridTemplateColumns: `repeat(${columns}, 24px)`,
+        gridTemplateRows: `repeat(${table.length}, 24px)`,
+        gridTemplateColumns: `repeat(${
+          table.length ? table[0].length : 0
+        }, 24px)`,
       }}
     >
-      {cells.map((cell, i) => (
-        <Cell key={i} cell={cell} />
+      {table.map((row, r) => (
+        <>
+          {row.map((cell, c) => (
+            <Cell key={`${r}-${c}`} cell={cell} />
+          ))}
+        </>
       ))}
     </Box>
   );

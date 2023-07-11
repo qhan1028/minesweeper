@@ -11,15 +11,15 @@ import { useLifecycles } from "react-use";
 
 export interface MinesweeperContextProps {
   reqReset$: Subject<void>;
-  reqOpenCell$: BehaviorSubject<number | undefined>;
-  reqFlagCell$: BehaviorSubject<number | undefined>;
+  reqOpenCell$: BehaviorSubject<[number, number] | undefined>;
+  reqFlagCell$: BehaviorSubject<[number, number] | undefined>;
   reqShowMines$: BehaviorSubject<boolean>;
 }
 
 export const MinesweeperContextDefault: MinesweeperContextProps = Object.seal({
   reqReset$: new Subject<void>(),
-  reqOpenCell$: new BehaviorSubject<number | undefined>(undefined),
-  reqFlagCell$: new BehaviorSubject<number | undefined>(undefined),
+  reqOpenCell$: new BehaviorSubject<[number, number] | undefined>(undefined),
+  reqFlagCell$: new BehaviorSubject<[number, number] | undefined>(undefined),
   reqShowMines$: new BehaviorSubject<boolean>(false),
 });
 
