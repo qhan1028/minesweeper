@@ -1,6 +1,5 @@
 /*
  * Created by Lin Liang-Han on 2023-7-11.
- * Copyright (c) 2023 Taiwan AI Labs.
  */
 
 import React, { Component, ErrorInfo, ReactNode } from "react";

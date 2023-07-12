@@ -1,6 +1,5 @@
 /*
  * Created by Lin Liang-Han on 2023-7-11.
- * Copyright (c) 2023 Taiwan AI Labs.
  */
 
 import {
@@ -11,11 +10,21 @@ import {
   useMemo,
   useState,
 } from "react";
-import { i2rc, i2square, openCell, rc2i, rc2square } from "@/util/table";
+import {
+  flagCell,
+  i2rc,
+  i2square,
+  initTable,
+  openCell,
+  openSquare,
+  rc2i,
+  rc2square,
+} from "@/util/table";
 
 import { Cell } from "@/types/cell";
 import { MinesweeperContext } from "@/context/MinesweeperContext";
 import { Stack } from "@mui/material";
+import { State } from "@/types/state";
 import { Table } from "@/component/Table";
 import { Toolbar } from "@/component/Toolbar";
 import { cloneDeep } from "lodash";
@@ -39,10 +48,10 @@ Array.prototype.shuffle = function shuffle<T>(this: T[]): T[] {
 export const Minesweeper: FC<{
   rows?: number;
   columns?: number;
-  mineNum?: number;
-}> = ({ rows = 10, columns = 20, mineNum = 40 }) => {
+  mines?: number;
+}> = ({ rows = 10, columns = 20, mines = 10 }) => {
   /** Context */
-  const { reqReset$, reqOpenCell$, reqFlagCell$ } =
+  const { state$, reqReset$, reqOpenCell$, reqOpenSquare$, reqFlagCell$ } =
     useContext(MinesweeperContext);
 
   /** State */
@@ -66,36 +75,68 @@ export const Minesweeper: FC<{
 
   /** Callback */
   const handleReset = useCallback(() => {
-    const numCells = rows * columns;
+    setTable(initTable(rows, columns));
+    state$.next(State.INIT);
+  }, [rows, columns, state$]);
 
-    const cellIndices = Array.from(Array(numCells).keys());
-    const mineIndices = cellIndices.slice().shuffle().slice(0, mineNum);
+  const handleStart = useCallback(
+    (initRow: number, initColumn: number) => {
+      setTable((oldTable) => {
+        // Prevent first picked cell to be a mine cell
+        const initIndex = rowColumnToIndex(initRow, initColumn);
+        const mineIndices = Array.from(Array(rows * columns).keys())
+          .filter((i) => i !== initIndex)
+          .shuffle()
+          .slice(0, mines);
 
-    // Setup mine table
-    const table: Cell[][] = new Array(rows)
-      .fill(0)
-      .map((_, row) =>
-        new Array(columns)
-          .fill(0)
-          .map((_, column) => ({ row, column, surroundingMines: 0 }))
-      );
+        const newTable = cloneDeep(oldTable);
 
-    // Plant mines
-    mineIndices.map((i) => {
-      const rowColumn = indexToRowColumn(i);
-      if (!rowColumn) return;
+        // Plant mines
+        mineIndices.map(indexToRowColumn).map((rowColumn) => {
+          if (!rowColumn) return;
 
-      const [row, column] = rowColumn;
-      table[row][column].isMine = true;
+          const [row, column] = rowColumn;
+          newTable[row][column].isMine = true;
 
-      const square = getRowColumnSquare(row, column);
-      square.map(([r, c]) => (table[r][c].surroundingMines += 1));
-    });
+          const square = getRowColumnSquare(row, column);
+          square.map(([r, c]) => (newTable[r][c].surroundingMines += 1));
+        });
 
-    setTable(table);
-  }, [rows, columns, mineNum, indexToRowColumn, getRowColumnSquare]);
+        // Open first cell
+        openCell(newTable, initRow, initColumn);
 
+        return newTable;
+      });
+
+      state$.next(State.PLAYING);
+    },
+    [
+      state$,
+      rowColumnToIndex,
+      rows,
+      columns,
+      mines,
+      indexToRowColumn,
+      getRowColumnSquare,
+    ]
+  );
+
+  /** Initialize table */
   useEffect(handleReset, [handleReset]);
+
+  /** Check playing status */
+  useEffect(() => {
+    const { alive, cleared } = table.flat().reduce(
+      (s, cell) => ({
+        alive: s.alive && !(cell.isMine && cell.isOpened),
+        cleared: s.cleared + (!cell.isMine && cell.isOpened ? 1 : 0),
+      }),
+      { alive: true, cleared: 0 }
+    );
+
+    if (!alive) state$.next(State.FAILED);
+    else if (cleared === rows * columns - mines) state$.next(State.SUCCEED);
+  }, [columns, mines, rows, state$, table]);
 
   /** Subscriptions */
   useEffect(() => {
@@ -106,22 +147,27 @@ export const Minesweeper: FC<{
         if (!rc) return;
         const [r, c] = rc;
 
-        if (r < 0 || c < 0 || r >= rows || c >= columns) return;
-        setTable((oldTable) => openCell(cloneDeep(oldTable), r, c));
+        state$.value === State.INIT
+          ? handleStart(r, c)
+          : state$.value === State.PLAYING
+          ? setTable((oldTable) => openCell(cloneDeep(oldTable), r, c))
+          : null;
+      }),
+
+      reqOpenSquare$.subscribe((rc) => {
+        if (!rc) return;
+        const [r, c] = rc;
+
+        if (state$.value === State.PLAYING)
+          setTable((oldTable) => openSquare(cloneDeep(oldTable), r, c));
       }),
 
       reqFlagCell$.subscribe((rc) => {
         if (!rc) return;
         const [r, c] = rc;
 
-        if (r < 0 || c < 0 || r >= rows || c >= columns) return;
-
-        setTable((oldTable) => {
-          const newTable = cloneDeep(oldTable);
-          newTable[r][c].isFlagged = !oldTable[r][c].isFlagged;
-
-          return newTable;
-        });
+        if (state$.value === State.PLAYING)
+          setTable((oldTable) => flagCell(cloneDeep(oldTable), r, c));
       }),
     ];
 
@@ -129,13 +175,16 @@ export const Minesweeper: FC<{
       subscriptions.map((s) => s.unsubscribe());
     };
   }, [
+    rows,
+    columns,
     handleReset,
+    indexToRowColumn,
+    handleStart,
+    state$,
     reqOpenCell$,
     reqReset$,
     reqFlagCell$,
-    rows,
-    columns,
-    indexToRowColumn,
+    reqOpenSquare$,
   ]);
 
   /** Render */
@@ -145,7 +194,7 @@ export const Minesweeper: FC<{
         gap: 2,
         padding: 2,
         borderRadius: 2,
-        backgroundColor: "grey",
+        backgroundColor: "gray",
         color: "black",
       }}
     >

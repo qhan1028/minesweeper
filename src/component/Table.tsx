@@ -1,12 +1,12 @@
 /*
  * Created by Lin Liang-Han on 2023-7-11.
- * Copyright (c) 2023 Taiwan AI Labs.
  */
+
+import React, { FC } from "react";
 
 import { Box } from "@mui/material";
 import { Cell } from "@/component/Cell";
 import { Cell as CellProps } from "@/types/cell";
-import { FC } from "react";
 
 export const Table: FC<{
   table: CellProps[][];
@@ -23,11 +23,11 @@ export const Table: FC<{
       }}
     >
       {table.map((row, r) => (
-        <>
+        <React.Fragment key={r}>
           {row.map((cell, c) => (
-            <Cell key={`${r}-${c}`} cell={cell} />
+            <Cell key={c} cell={cell} />
           ))}
-        </>
+        </React.Fragment>
       ))}
     </Box>
   );

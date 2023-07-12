@@ -1,6 +1,5 @@
 /*
  * Created by Lin Liang-Han on 2023-7-11.
- * Copyright (c) 2023 Taiwan AI Labs.
  */
 
 import { Cell } from "@/types/cell";
@@ -64,6 +63,16 @@ export const rc2square =
     return square;
   };
 
+export const initTable = (rows: number, columns: number): Cell[][] =>
+  new Array(rows).fill(0).map((_, row) =>
+    new Array(columns).fill(0).map((_, column) => ({
+      row,
+      column,
+      surroundingMines: 0,
+      surroundingFlags: 0,
+    }))
+  );
+
 export const openCell = (table: Cell[][], row: number, column: number) => {
   const rows = table.length;
   const columns = rows ? table[0].length : 0;
@@ -71,19 +80,62 @@ export const openCell = (table: Cell[][], row: number, column: number) => {
   // Out of boundary
   if (row < 0 || column < 0 || row >= rows || column >= columns) return table;
 
+  // Get cell
+  const cell = table[row][column];
+
   // Already visited
-  if (table[row][column].isOpened) return table;
-  table[row][column].isOpened = true;
+  if (cell.isOpened) return table;
+  cell.isOpened = true;
+
+  // Unflag cell
+  if (cell.isFlagged) flagCell(table, row, column);
 
   // Bump into mine
-  if (table[row][column].isMine) return table;
+  if (cell.isMine) return table;
 
   // No surrounding mines
-  if (table[row][column].surroundingMines === 0) {
+  if (cell.surroundingMines === 0) {
     rc2square(rows, columns)(row, column).map(([r, c]) =>
       openCell(table, r, c)
     );
   }
+
+  return table;
+};
+
+export const openSquare = (table: Cell[][], row: number, column: number) => {
+  const rows = table.length;
+  const columns = rows ? table[0].length : 0;
+
+  // Out of boundary
+  if (row < 0 || column < 0 || row >= rows || column >= columns) return table;
+
+  rc2square(rows, columns)(row, column).map(([r, c]) => {
+    if (!table[r][c].isFlagged) openCell(table, r, c);
+  });
+
+  return table;
+};
+
+export const flagCell = (table: Cell[][], row: number, column: number) => {
+  const rows = table.length;
+  const columns = rows ? table[0].length : 0;
+
+  // Out of boundary
+  if (row < 0 || column < 0 || row >= rows || column >= columns) return table;
+
+  // Get cell
+  const cell = table[row][column];
+
+  // Clear flag if is opened
+  if (cell.isOpened && !cell.isFlagged) return table;
+
+  cell.isFlagged = !cell.isFlagged;
+
+  rc2square(rows, columns)(row, column).map(([r, c]) => {
+    if (r === row && c === column) return;
+    table[r][c].surroundingFlags += cell.isFlagged ? 1 : -1;
+  });
 
   return table;
 };

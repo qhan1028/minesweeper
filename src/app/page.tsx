@@ -1,6 +1,5 @@
 /*
  * Created by Lin Liang-Han on 2023-7-10.
- * Copyright (c) 2023 Taiwan AI Labs.
  */
 
 "use client";

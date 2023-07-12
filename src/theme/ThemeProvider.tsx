@@ -1,6 +1,5 @@
 /*
  * Created by Lin Liang-Han on 2023-7-11.
- * Copyright (c) 2023 Taiwan AI Labs.
  */
 
 import {
@@ -18,10 +17,33 @@ export const ThemeProvider: FC<HTMLAttributes<HTMLDivElement>> = ({
   const options = useMemo(
     () =>
       ({
-        spacing: 8,
+        typography: {
+          fontFamily: "monospace",
+        },
         components: {
           MuiButton: {
-            styleOverrides: { root: { textTransform: "unset" } },
+            styleOverrides: {
+              root: {
+                textTransform: "unset",
+                fontWeight: "bold",
+                minWidth: "unset",
+                minHeight: "unset",
+                lineHeight: 1,
+                padding: 4,
+                borderRadius: 0,
+                borderStyle: "solid",
+                borderWidth: 2.5,
+                borderColor: "white darkgray darkgray white",
+                "&:active": {
+                  borderColor: "darkgray",
+                },
+              },
+            },
+            defaultProps: {
+              disableRipple: true,
+              variant: "contained",
+              size: "small",
+            },
           },
         },
       } as ThemeOptions),

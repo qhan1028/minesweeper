@@ -1,17 +1,24 @@
 /*
  * Created by Lin Liang-Han on 2023-7-11.
- * Copyright (c) 2023 Taiwan AI Labs.
  */
 
-import { Button, Stack } from "@mui/material";
+import { Box, Button, Stack } from "@mui/material";
 import { FC, useCallback, useContext } from "react";
+import {
+  Replay as ReplayIcon,
+  ResetTvOutlined,
+  Visibility,
+  VisibilityOff,
+} from "@mui/icons-material";
 
 import { MinesweeperContext } from "@/context/MinesweeperContext";
+import { State } from "@/types/state";
 import { useObservable } from "react-use";
 
 export const Toolbar: FC<{}> = ({}) => {
   /** Context */
-  const { reqReset$, reqShowMines$ } = useContext(MinesweeperContext);
+  const { state$, reqReset$, reqShowMines$ } = useContext(MinesweeperContext);
+  const state = useObservable(state$);
   const showMines = useObservable(reqShowMines$, false);
 
   /** Callback */
@@ -24,13 +31,37 @@ export const Toolbar: FC<{}> = ({}) => {
 
   /** Render */
   return (
-    <Stack direction="row" sx={{ gap: 2 }}>
-      <Button variant="contained" color="inherit" onClick={handleReset}>
-        Reset
-      </Button>
-      <Button variant="contained" color="inherit" onClick={handleShowMines}>
-        {showMines ? "Hide" : "Show"}
-      </Button>
-    </Stack>
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: "repeat(3, 1fr)",
+        justifyItems: "center",
+      }}
+    >
+      <Stack direction="row" justifySelf="flex-start">
+        {/* Timer */}
+      </Stack>
+      <Stack direction="row">
+        <Button color="inherit" sx={{ fontSize: "x-large" }}>
+          {state === State.INIT
+            ? "😐"
+            : state === State.PLAYING
+            ? "🧐"
+            : state === State.SUCCEED
+            ? "😎"
+            : state === State.FAILED
+            ? "😵"
+            : ""}
+        </Button>
+      </Stack>
+      <Stack direction="row" justifySelf="flex-end">
+        <Button color="inherit" onClick={handleReset}>
+          <ReplayIcon />
+        </Button>
+        <Button color="inherit" onClick={handleShowMines}>
+          {showMines ? <VisibilityOff /> : <Visibility />}
+        </Button>
+      </Stack>
+    </Box>
   );
 };

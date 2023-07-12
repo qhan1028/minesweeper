@@ -1,6 +1,5 @@
 /*
  * Created by Lin Liang-Han on 2023-7-11.
- * Copyright (c) 2023 Taiwan AI Labs.
  */
 
 import { FC, useCallback, useContext } from "react";
@@ -9,6 +8,7 @@ import { Flag, NewReleases } from "@mui/icons-material";
 import { Box } from "@mui/material";
 import { Cell as CellProps } from "@/types/cell";
 import { MinesweeperContext } from "@/context/MinesweeperContext";
+import { State } from "@/types/state";
 import { useObservable } from "react-use";
 
 const CellColor: { [key: number]: string } = {
@@ -20,21 +20,30 @@ const CellColor: { [key: number]: string } = {
   [5]: "darkred",
   [6]: "darkcyan",
   [7]: "black",
-  [8]: "grey",
+  [8]: "gray",
 };
 
 export const Cell: FC<{
   cell: CellProps;
 }> = ({ cell }) => {
   /** Context */
-  const { reqOpenCell$, reqFlagCell$, reqShowMines$ } =
+  const { state$, reqOpenCell$, reqOpenSquare$, reqFlagCell$, reqShowMines$ } =
     useContext(MinesweeperContext);
+  const state = useObservable(state$);
   const showMines = useObservable(reqShowMines$, false);
 
   /** Callback */
   const handleClick = useCallback(
     () => !cell.isFlagged && reqOpenCell$.next([cell.row, cell.column]),
     [cell, reqOpenCell$]
+  );
+
+  const handleDoubleClick = useCallback(
+    () =>
+      cell.isOpened &&
+      cell.surroundingFlags === cell.surroundingMines &&
+      reqOpenSquare$.next([cell.row, cell.column]),
+    [cell, reqOpenSquare$]
   );
 
   const handleContextMenu = useCallback(
@@ -55,22 +64,21 @@ export const Cell: FC<{
         justifyContent: "center",
         fontWeight: "bold",
         color: cell.isFlagged
-          ? "darkgrey"
+          ? "gray"
           : cell.isMine
-          ? cell.isOpened
-            ? "red"
-            : "black"
+          ? "black"
           : CellColor[cell.surroundingMines],
-        backgroundColor: "lightgrey",
-        borderWidth: cell.isOpened ? 1 : 2,
+        backgroundColor: cell.isOpened && cell.isMine ? "red" : "lightgrey",
+        borderWidth: cell.isOpened ? 1 : 2.5,
         borderStyle: "solid",
         borderColor: cell.isOpened
-          ? "darkgrey"
-          : "white darkgrey darkgrey white",
+          ? "darkgray"
+          : "white darkgray darkgray white",
         cursor: "pointer",
         userSelect: "none",
       }}
       onClick={handleClick}
+      onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
     >
       {cell.isFlagged ? (
@@ -83,7 +91,10 @@ export const Cell: FC<{
             transform: "translate(-50%, -50%)",
           }}
         />
-      ) : cell.isOpened || showMines ? (
+      ) : cell.isOpened ||
+        showMines ||
+        state === State.FAILED ||
+        state === State.SUCCEED ? (
         cell.isMine ? (
           <NewReleases
             sx={{
