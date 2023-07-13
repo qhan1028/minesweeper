@@ -17,7 +17,7 @@ export const StateEmoji: FC = () => {
 
   /** Render */
   return (
-    <Button color="inherit" className={classes.root}>
+    <Button color="inherit" sx={{ fontSize: "x-large" }}>
       {state === State.INIT
         ? "😐"
         : state === State.START || state === State.PLAYING

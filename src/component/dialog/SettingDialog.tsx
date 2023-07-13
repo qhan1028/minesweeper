@@ -3,6 +3,7 @@
  */
 
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -11,7 +12,6 @@ import {
   FormGroup,
   InputLabel,
   OutlinedInput,
-  Stack,
 } from "@mui/material";
 import { Config, DefaultConfig } from "@/types/config";
 import { FC, useCallback, useContext, useState } from "react";
@@ -23,8 +23,7 @@ import { useObservable } from "react-use";
 
 export const SettingDialog: FC = () => {
   /** Context */
-  const { reqOpenSettingDialog$, reqMessage$, config$ } =
-    useContext(MinesweeperContext);
+  const { reqOpenSettingDialog$, reqMessage$, config$ } = useContext(MinesweeperContext);
   const oldConfig = useObservable(config$, DefaultConfig);
   const { rows, columns, mines } = oldConfig;
   const open = useObservable(reqOpenSettingDialog$, false);
@@ -39,7 +38,7 @@ export const SettingDialog: FC = () => {
         ...config,
         [field]: parseInt(e.target.value),
       })),
-    []
+    [],
   );
 
   const handleCancel = useCallback(() => {
@@ -87,7 +86,7 @@ export const SettingDialog: FC = () => {
         reqOpenSettingDialog$.next(false);
       }
     },
-    [config$, newConfig, reqMessage$, reqOpenSettingDialog$]
+    [config$, newConfig, reqMessage$, reqOpenSettingDialog$],
   );
 
   /** Render */
@@ -96,16 +95,11 @@ export const SettingDialog: FC = () => {
       <DialogTitle>Settings</DialogTitle>
       <DialogContent>
         <FormGroup sx={{ gap: 2 }}>
-          <Stack className={classes.row}>
+          <Box className={classes.row}>
             <InputLabel className={classes.label}>Rows</InputLabel>
-            <OutlinedInput
-              className={classes.input}
-              type="number"
-              defaultValue={rows}
-              onBlur={handleInput("rows")}
-            />
-          </Stack>
-          <Stack className={classes.row}>
+            <OutlinedInput className={classes.input} type="number" defaultValue={rows} onBlur={handleInput("rows")} />
+          </Box>
+          <Box className={classes.row}>
             <InputLabel className={classes.label}>Columns</InputLabel>
             <OutlinedInput
               className={classes.input}
@@ -113,16 +107,11 @@ export const SettingDialog: FC = () => {
               defaultValue={columns}
               onBlur={handleInput("columns")}
             />
-          </Stack>
-          <Stack className={classes.row}>
+          </Box>
+          <Box className={classes.row}>
             <InputLabel className={classes.label}>Mines</InputLabel>
-            <OutlinedInput
-              className={classes.input}
-              type="number"
-              defaultValue={mines}
-              onBlur={handleInput("mines")}
-            />
-          </Stack>
+            <OutlinedInput className={classes.input} type="number" defaultValue={mines} onBlur={handleInput("mines")} />
+          </Box>
         </FormGroup>
       </DialogContent>
       <DialogActions>
