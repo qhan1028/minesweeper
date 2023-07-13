@@ -1,0 +1,25 @@
+/*
+ * Created by Lin Liang-Han on 2023-7-14.
+ */
+
+.root {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.left {
+  flex-direction: row;
+  justify-self: flex-start;
+}
+
+.center {
+  flex-direction: row;
+  justify-self: center;
+}
+
+.right {
+  flex-direction: row;
+  justify-self: flex-end;
+}

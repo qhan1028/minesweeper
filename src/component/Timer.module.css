@@ -1,0 +1,30 @@
+/*
+ * Created by Lin Liang-Han on 2023-7-14.
+ */
+
+.root {
+  color: red;
+  background: black;
+
+  border: 2px solid;
+  border-color: darkgray lightgray lightgray darkgray;
+
+  font-family: Digital Numbers;
+  font-size: x-large;
+  font-weight: bold;
+  user-select: none;
+  line-height: 1;
+
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.digits-background {
+  position: absolute;
+  color: #500000;
+}
+
+.digits-foreground {
+  z-index: 1;
+}

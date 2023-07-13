@@ -4,7 +4,10 @@
 
 export enum State {
   INIT,
+  START,
   PLAYING,
   SUCCEED,
   FAILED,
 }
+
+export const DefaultState: State = State.INIT;

@@ -7,19 +7,21 @@ import React, { FC } from "react";
 import { Box } from "@mui/material";
 import { Cell } from "@/component/Cell";
 import { Cell as CellProps } from "@/types/cell";
+import classes from "./Table.module.css";
 
 export const Table: FC<{
   table: CellProps[][];
 }> = ({ table }) => {
+  const rows = table.length;
+  const columns = rows ? table[0].length : 0;
+
   /** Render */
   return (
     <Box
+      className={classes.root}
       sx={{
-        display: "grid",
-        gridTemplateRows: `repeat(${table.length}, 24px)`,
-        gridTemplateColumns: `repeat(${
-          table.length ? table[0].length : 0
-        }, 24px)`,
+        gridTemplateRows: `repeat(${rows}, 24px)`,
+        gridTemplateColumns: `repeat(${columns}, 24px)`,
       }}
     >
       {table.map((row, r) => (

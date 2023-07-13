@@ -20,16 +20,19 @@ import {
   rc2i,
   rc2square,
 } from "@/util/table";
+import { useLifecycles, useObservable } from "react-use";
 
 import { Cell } from "@/types/cell";
+import { DefaultConfig } from "@/types/config";
+import { Message } from "@/component/snackbar/Message";
 import { MinesweeperContext } from "@/context/MinesweeperContext";
+import { SettingDialog } from "@/component/dialog/SettingDialog";
 import { Stack } from "@mui/material";
 import { State } from "@/types/state";
 import { Table } from "@/component/Table";
 import { Toolbar } from "@/component/Toolbar";
+import classes from "./Minesweeper.module.css";
 import { cloneDeep } from "lodash";
-
-export {};
 
 declare global {
   interface Array<T> {
@@ -45,39 +48,56 @@ Array.prototype.shuffle = function shuffle<T>(this: T[]): T[] {
   return this;
 };
 
-export const Minesweeper: FC<{
-  rows?: number;
-  columns?: number;
-  mines?: number;
-}> = ({ rows = 10, columns = 20, mines = 10 }) => {
+export const Minesweeper: FC = () => {
   /** Context */
-  const { state$, reqReset$, reqOpenCell$, reqOpenSquare$, reqFlagCell$ } =
-    useContext(MinesweeperContext);
+  const {
+    state$,
+    config$,
+    reqReset$,
+    reqOpenCell$,
+    reqOpenSquare$,
+    reqFlagCell$,
+  } = useContext(MinesweeperContext);
+  const { rows, columns, mines } = useObservable(config$, DefaultConfig);
+
+  useEffect(() => {
+    console.info(rows, columns, mines);
+  }, [columns, mines, rows]);
 
   /** State */
   const [table, setTable] = useState<Cell[][]>([]);
 
+  /** Lifecycle */
+  useLifecycles(
+    () => handleReset(),
+    () => {
+      state$.next(State.INIT);
+      reqOpenCell$.next(undefined);
+      reqOpenSquare$.next(undefined);
+      reqFlagCell$.next(undefined);
+    }
+  );
+
   /** Memo */
-  const {
-    getSquareIndices,
-    getRowColumnSquare,
-    indexToRowColumn,
-    rowColumnToIndex,
-  } = useMemo(
+  const { getRowColumnSquare, indexToRowColumn, rowColumnToIndex } = useMemo(
     () => ({
-      getSquareIndices: i2square(rows, columns),
-      getRowColumnSquare: rc2square(rows, columns),
       indexToRowColumn: i2rc(rows, columns),
       rowColumnToIndex: rc2i(rows, columns),
+      getSquareIndices: i2square(rows, columns),
+      getRowColumnSquare: rc2square(rows, columns),
     }),
-    [rows, columns]
+    [columns, rows]
   );
 
   /** Callback */
   const handleReset = useCallback(() => {
-    setTable(initTable(rows, columns));
     state$.next(State.INIT);
-  }, [rows, columns, state$]);
+    reqOpenCell$.next(undefined);
+    reqOpenSquare$.next(undefined);
+    reqFlagCell$.next(undefined);
+
+    setTable(initTable(rows, columns));
+  }, [state$, reqOpenCell$, reqOpenSquare$, reqFlagCell$, rows, columns]);
 
   const handleStart = useCallback(
     (initRow: number, initColumn: number) => {
@@ -108,21 +128,18 @@ export const Minesweeper: FC<{
         return newTable;
       });
 
-      state$.next(State.PLAYING);
+      state$.next(State.START);
     },
     [
-      state$,
-      rowColumnToIndex,
       rows,
       columns,
       mines,
+      state$,
+      rowColumnToIndex,
       indexToRowColumn,
       getRowColumnSquare,
     ]
   );
-
-  /** Initialize table */
-  useEffect(handleReset, [handleReset]);
 
   /** Check playing status */
   useEffect(() => {
@@ -141,7 +158,7 @@ export const Minesweeper: FC<{
   /** Subscriptions */
   useEffect(() => {
     const subscriptions = [
-      reqReset$.subscribe(handleReset),
+      reqReset$.subscribe(() => handleReset()),
 
       reqOpenCell$.subscribe((rc) => {
         if (!rc) return;
@@ -169,37 +186,39 @@ export const Minesweeper: FC<{
         if (state$.value === State.PLAYING)
           setTable((oldTable) => flagCell(cloneDeep(oldTable), r, c));
       }),
+
+      state$.subscribe(
+        (state) => state === State.START && state$.next(State.PLAYING)
+      ),
+
+      config$.subscribe(() => handleReset()),
     ];
 
     return () => {
       subscriptions.map((s) => s.unsubscribe());
     };
   }, [
-    rows,
-    columns,
-    handleReset,
     indexToRowColumn,
+    handleReset,
     handleStart,
     state$,
     reqOpenCell$,
     reqReset$,
     reqFlagCell$,
     reqOpenSquare$,
+    config$,
   ]);
 
   /** Render */
   return (
-    <Stack
-      sx={{
-        gap: 2,
-        padding: 2,
-        borderRadius: 2,
-        backgroundColor: "gray",
-        color: "black",
-      }}
-    >
-      <Toolbar />
-      <Table table={table} />
-    </Stack>
+    <>
+      <Stack className={classes.root}>
+        <Toolbar />
+        <Table table={table} />
+      </Stack>
+
+      <SettingDialog />
+      <Message />
+    </>
   );
 };

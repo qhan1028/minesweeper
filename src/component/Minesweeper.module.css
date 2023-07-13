@@ -1,0 +1,11 @@
+/*
+ * Created by Lin Liang-Han on 2023-7-14.
+ */
+
+.root {
+  gap: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  color: black;
+  background-color: gray;
+}

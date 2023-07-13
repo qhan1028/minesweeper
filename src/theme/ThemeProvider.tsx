@@ -17,8 +17,11 @@ export const ThemeProvider: FC<HTMLAttributes<HTMLDivElement>> = ({
   const options = useMemo(
     () =>
       ({
+        palette: {
+          primary: { main: "#808080" },
+        },
         typography: {
-          fontFamily: "monospace",
+          fontFamily: "roboto",
         },
         components: {
           MuiButton: {
@@ -37,6 +40,9 @@ export const ThemeProvider: FC<HTMLAttributes<HTMLDivElement>> = ({
                 "&:active": {
                   borderColor: "darkgray",
                 },
+                "&:disabled": {
+                  background: "lightgray",
+                },
               },
             },
             defaultProps: {
@@ -44,6 +50,27 @@ export const ThemeProvider: FC<HTMLAttributes<HTMLDivElement>> = ({
               variant: "contained",
               size: "small",
             },
+          },
+          MuiDialog: {
+            defaultProps: { PaperProps: { sx: { borderRadius: 2 } } },
+          },
+          MuiDialogTitle: {
+            styleOverrides: { root: { padding: 16, lineHeight: 1 } },
+          },
+          MuiDialogContent: { styleOverrides: { root: { padding: 24 } } },
+          MuiDialogActions: { styleOverrides: { root: { padding: 16 } } },
+          MuiTextField: {
+            defaultProps: { size: "small" },
+          },
+          MuiOutlinedInput: {
+            defaultProps: {
+              size: "small",
+              autoComplete: "off",
+              autoCorrect: "off",
+            },
+          },
+          MuiFormControl: {
+            styleOverrides: { flexDirection: "row", alignItems: "baseline" },
           },
         },
       } as ThemeOptions),
@@ -59,6 +86,10 @@ export const ThemeProvider: FC<HTMLAttributes<HTMLDivElement>> = ({
   return (
     <ThemeProviderV5 theme={theme}>
       <CssBaseline />
+      <link
+        href="https://fonts.cdnfonts.com/css/digital-numbers"
+        rel="stylesheet"
+      ></link>
       {children}
     </ThemeProviderV5>
   );

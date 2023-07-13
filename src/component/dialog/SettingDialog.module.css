@@ -1,0 +1,17 @@
+/*
+ * Created by Lin Liang-Han on 2023-7-14.
+ */
+
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.label {
+  flex-basis: 80px;
+}
+
+.input {
+  flex-basis: 160px;
+}

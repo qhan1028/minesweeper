@@ -6,18 +6,22 @@ import { Box, Button, Stack } from "@mui/material";
 import { FC, useCallback, useContext } from "react";
 import {
   Replay as ReplayIcon,
-  ResetTvOutlined,
+  Settings,
   Visibility,
   VisibilityOff,
 } from "@mui/icons-material";
 
 import { MinesweeperContext } from "@/context/MinesweeperContext";
 import { State } from "@/types/state";
+import { StateEmoji } from "@/component/StateEmoji";
+import { Timer } from "@/component/Timer";
+import classes from "./Toolbar.module.css";
 import { useObservable } from "react-use";
 
 export const Toolbar: FC<{}> = ({}) => {
   /** Context */
-  const { state$, reqReset$, reqShowMines$ } = useContext(MinesweeperContext);
+  const { state$, reqReset$, reqShowMines$, reqOpenSettingDialog$ } =
+    useContext(MinesweeperContext);
   const state = useObservable(state$);
   const showMines = useObservable(reqShowMines$, false);
 
@@ -29,37 +33,33 @@ export const Toolbar: FC<{}> = ({}) => {
     [reqShowMines$]
   );
 
+  const handleOpenSetting = useCallback(
+    () => reqOpenSettingDialog$.next(true),
+    [reqOpenSettingDialog$]
+  );
+
   /** Render */
   return (
-    <Box
-      sx={{
-        display: "grid",
-        gridTemplateColumns: "repeat(3, 1fr)",
-        justifyItems: "center",
-      }}
-    >
-      <Stack direction="row" justifySelf="flex-start">
-        {/* Timer */}
+    <Box className={classes.root}>
+      <Stack className={classes.left}>
+        <Timer />
       </Stack>
-      <Stack direction="row">
-        <Button color="inherit" sx={{ fontSize: "x-large" }}>
-          {state === State.INIT
-            ? "😐"
-            : state === State.PLAYING
-            ? "🧐"
-            : state === State.SUCCEED
-            ? "😎"
-            : state === State.FAILED
-            ? "😵"
-            : ""}
-        </Button>
+      <Stack className={classes.center}>
+        <StateEmoji />
       </Stack>
-      <Stack direction="row" justifySelf="flex-end">
+      <Stack className={classes.right}>
         <Button color="inherit" onClick={handleReset}>
           <ReplayIcon />
         </Button>
         <Button color="inherit" onClick={handleShowMines}>
           {showMines ? <VisibilityOff /> : <Visibility />}
+        </Button>
+        <Button
+          color="inherit"
+          disabled={state !== State.INIT}
+          onClick={handleOpenSetting}
+        >
+          <Settings />
         </Button>
       </Stack>
     </Box>

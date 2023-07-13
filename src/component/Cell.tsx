@@ -9,6 +9,7 @@ import { Box } from "@mui/material";
 import { Cell as CellProps } from "@/types/cell";
 import { MinesweeperContext } from "@/context/MinesweeperContext";
 import { State } from "@/types/state";
+import classes from "./Cell.module.css";
 import { useObservable } from "react-use";
 
 const CellColor: { [key: number]: string } = {
@@ -57,12 +58,8 @@ export const Cell: FC<{
   /** Render */
   return (
     <Box
+      className={classes.root}
       sx={{
-        position: "relative",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontWeight: "bold",
         color: cell.isFlagged
           ? "gray"
           : cell.isMine
@@ -70,41 +67,23 @@ export const Cell: FC<{
           : CellColor[cell.surroundingMines],
         backgroundColor: cell.isOpened && cell.isMine ? "red" : "lightgrey",
         borderWidth: cell.isOpened ? 1 : 2.5,
-        borderStyle: "solid",
         borderColor: cell.isOpened
           ? "darkgray"
           : "white darkgray darkgray white",
-        cursor: "pointer",
-        userSelect: "none",
+        cursor: cell.isOpened ? "default" : "pointer",
       }}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
     >
       {cell.isFlagged ? (
-        <Flag
-          sx={{
-            p: 0.25,
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-          }}
-        />
+        <Flag className={classes.icon} />
       ) : cell.isOpened ||
         showMines ||
         state === State.FAILED ||
         state === State.SUCCEED ? (
         cell.isMine ? (
-          <NewReleases
-            sx={{
-              p: 0.25,
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-            }}
-          />
+          <NewReleases className={classes.icon} />
         ) : (
           cell.surroundingMines
         )
