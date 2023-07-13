@@ -1,0 +1,12 @@
+/*
+ * Created by Lin Liang-Han on 2023-7-14.
+ */
+
+.root {
+  width: calc(100vw - 24px);
+  height: calc(100vh - 24px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

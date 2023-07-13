@@ -1,0 +1,23 @@
+/*
+ * Created by Lin Liang-Han on 2023-7-14.
+ */
+
+.root {
+  position: relative;
+  border-style: solid;
+  font-weight: bold;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  user-select: none;
+}
+
+.icon {
+  padding: 2px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
