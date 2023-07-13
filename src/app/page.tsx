@@ -4,7 +4,7 @@
 
 "use client";
 
-import { Container } from "@mui/material";
+import { Box } from "@mui/material";
 import ErrorBoundary from "@/component/ErrorBoundary";
 import { Minesweeper } from "@/component/Minesweeper";
 import { ThemeProvider } from "@/theme/ThemeProvider";
@@ -14,9 +14,9 @@ export default function Home() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <Container className={classes.root}>
+        <Box className={classes.root}>
           <Minesweeper />
-        </Container>
+        </Box>
       </ThemeProvider>
     </ErrorBoundary>
   );

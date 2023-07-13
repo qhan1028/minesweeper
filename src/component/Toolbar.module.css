@@ -10,16 +10,19 @@
 }
 
 .left {
+  display: flex;
   flex-direction: row;
   justify-self: flex-start;
 }
 
 .center {
+  display: flex;
   flex-direction: row;
   justify-self: center;
 }
 
 .right {
+  display: flex;
   flex-direction: row;
   justify-self: flex-end;
 }

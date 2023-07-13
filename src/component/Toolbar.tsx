@@ -2,14 +2,9 @@
  * Created by Lin Liang-Han on 2023-7-11.
  */
 
-import { Box, Button, Stack } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { FC, useCallback, useContext } from "react";
-import {
-  Replay as ReplayIcon,
-  Settings,
-  Visibility,
-  VisibilityOff,
-} from "@mui/icons-material";
+import { Replay as ReplayIcon, Settings, Visibility, VisibilityOff } from "@mui/icons-material";
 
 import { MinesweeperContext } from "@/context/MinesweeperContext";
 import { State } from "@/types/state";
@@ -20,48 +15,37 @@ import { useObservable } from "react-use";
 
 export const Toolbar: FC<{}> = ({}) => {
   /** Context */
-  const { state$, reqReset$, reqShowMines$, reqOpenSettingDialog$ } =
-    useContext(MinesweeperContext);
+  const { state$, reqReset$, reqShowMines$, reqOpenSettingDialog$ } = useContext(MinesweeperContext);
   const state = useObservable(state$);
   const showMines = useObservable(reqShowMines$, false);
 
   /** Callback */
   const handleReset = useCallback(() => reqReset$.next(), [reqReset$]);
 
-  const handleShowMines = useCallback(
-    () => reqShowMines$.next(!reqShowMines$.value),
-    [reqShowMines$]
-  );
+  const handleShowMines = useCallback(() => reqShowMines$.next(!reqShowMines$.value), [reqShowMines$]);
 
-  const handleOpenSetting = useCallback(
-    () => reqOpenSettingDialog$.next(true),
-    [reqOpenSettingDialog$]
-  );
+  const handleOpenSetting = useCallback(() => reqOpenSettingDialog$.next(true), [reqOpenSettingDialog$]);
 
   /** Render */
   return (
     <Box className={classes.root}>
-      <Stack className={classes.left}>
+      <Box className={classes.left}>
         <Timer />
-      </Stack>
-      <Stack className={classes.center}>
+      </Box>
+      <Box className={classes.center}>
         <StateEmoji />
-      </Stack>
-      <Stack className={classes.right}>
+      </Box>
+      <Box className={classes.right}>
         <Button color="inherit" onClick={handleReset}>
           <ReplayIcon />
         </Button>
         <Button color="inherit" onClick={handleShowMines}>
           {showMines ? <VisibilityOff /> : <Visibility />}
         </Button>
-        <Button
-          color="inherit"
-          disabled={state !== State.INIT}
-          onClick={handleOpenSetting}
-        >
+        <Button color="inherit" disabled={state !== State.INIT} onClick={handleOpenSetting}>
           <Settings />
         </Button>
-      </Stack>
+      </Box>
     </Box>
   );
 };
