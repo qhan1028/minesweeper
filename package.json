@@ -13,8 +13,6 @@
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.13.7",
     "@mui/material": "^5.13.7",
-    "eslint": "^8.44.0",
-    "eslint-config-next": "13.4.9",
     "lodash": "^4.17.21",
     "next": "13.4.9",
     "notistack": "^3.0.1",
@@ -25,6 +23,8 @@
     "typescript": "5.1.6"
   },
   "devDependencies": {
+    "eslint": "^8.44.0",
+    "eslint-config-next": "13.4.9",
     "@types/lodash": "^4.14.195",
     "@types/node": "20.4.1",
     "@types/react": "18.2.14",
@@ -34,8 +34,6 @@
   },
   "prettier": {
     "trailingComma": "all",
-    "singleQuote": true,
-    "jsxSingleQuote": true,
     "printWidth": 120
   },
   "lint-staged": {
