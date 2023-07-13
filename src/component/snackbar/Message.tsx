@@ -18,10 +18,7 @@ export const Message: FC = ({}) => {
   const [message, setMessage] = useState<MessageProps | undefined>(undefined);
 
   /** Callback */
-  const handleClose = useCallback(
-    () => reqMessage$.next(undefined),
-    [reqMessage$]
-  );
+  const handleClose = useCallback(() => reqMessage$.next(undefined), [reqMessage$]);
 
   /** Memo */
   useEffect(() => {
@@ -31,7 +28,7 @@ export const Message: FC = ({}) => {
           case State.SUCCEED:
             reqMessage$.next({
               severity: "success",
-              text: "Congradulations! You've completed the mission! 🥳",
+              text: "Congratulations! You've completed the mission! 🥳",
             });
             break;
 
@@ -67,11 +64,7 @@ export const Message: FC = ({}) => {
       autoHideDuration={5000}
       anchorOrigin={{ vertical: "top", horizontal: "center" }}
     >
-      <Alert
-        variant="filled"
-        severity={message?.severity}
-        onClose={handleClose}
-      >
+      <Alert variant="filled" severity={message?.severity} onClose={handleClose}>
         {message?.text}
       </Alert>
     </Snackbar>
